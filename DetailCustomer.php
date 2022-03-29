@@ -32,10 +32,12 @@ class DetailCustomer extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['detcus_cust_id', 'detcus_ket', 'detcus_tanggal', ], 'required'],
+            // [['detcus_cust_id', 'detcus_ket', 'detcus_tanggal', ], 'required'],
+            // id detail tidak direquired
+            [['detcus_ket', 'detcus_tanggal', ], 'required']
             [['detcus_cust_id', ], 'integer'],
             [['detcus_ket'], 'string', 'max' => 70],
-            [['detcus_tanggal', ], 'safe'],
+            [['detcus_tanggal', 'detcus_cust_id'], 'safe'],
         ];
     }
 
