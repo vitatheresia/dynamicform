@@ -147,7 +147,9 @@ class DetailCustomerController extends Controller
                     } catch (Exception $e) {
                         $transaction->rollBack();
                     }
-                }    
+                }   else {
+                    Yii::$app->session->setFlash('error', 'gagal melakukan validasi pada model');
+                } 
              }
         } else {
             $model->loadDefaultValues();
