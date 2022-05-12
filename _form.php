@@ -3,18 +3,15 @@
 
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
-use yii\web\JsExpression;
 use kartik\form\ActiveForm;
 use kartik\date\DatePicker;
-use wbraganca\dynamicform\DynamicFormWidget;
 use kartik\select2\Select2;
-use kartik\depdrop\Depdrop;
 use common\models\Customer;
 use common\models\PaketFoto;
 use common\models\PaketUpgrade;
 use yii\web\View;
 use yii\web\JqueryAsset;
-use yii\jui\AutoComplete;
+use kidzen\dynamicform\DynamicFormWidget;
 
 ?>
 
@@ -25,19 +22,7 @@ use yii\jui\AutoComplete;
             <div class="x_title">
                 <h2><small>Silahkan Input Jadwal Pemesanan</small></h2>
                 <ul class="nav navbar-right panel_toolbox">
-                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-wrench"></i></a>
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a class="dropdown-item" href="#">Settings 1</a>
-                            </li>
-                            <li><a class="dropdown-item" href="#">Settings 2</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li><a class="close-link"><i class="fa fa-close"></i></a>
-                    </li>
+                
                 </ul>
                 <div class="clearfix"></div>
             </div>
@@ -45,8 +30,6 @@ use yii\jui\AutoComplete;
                 <?php $form = ActiveForm::begin([
                     'options' => ['enctype'=>'multipart/form-data'],
                     'id' => 'dynamic-form', 
-                    //'type' => ActiveForm::TYPE_HORIZONTAL,
-                    //'formConfig' => ['labelSpan' => 3, 'deviceSize' => ActiveForm::SIZE_SMALL],
                    
                 ]); ?>
                 <div class="form-group col-sm-6">
@@ -60,7 +43,7 @@ use yii\jui\AutoComplete;
                         'data' => $customer,
                         'language' => 'en',
                         'options' => [
-                            'value' => (!$model->isNewRecord ? $selected : ''), 
+                            //'value' => (!$model->isNewRecord ? $selected : ''), 
                             'placeholder' => 'Input No Invoice',
                             'id' => 'noinvoice'
                         ],
@@ -106,6 +89,7 @@ use yii\jui\AutoComplete;
                     'formFields' => [
                         'odpf_paket_id',
                         'odpf_qty',
+                        'odpf_harga'
                     ],
                 ]); ?>
                 <table class="table">
@@ -172,7 +156,7 @@ use yii\jui\AutoComplete;
                         <tr>
                             <td colspan="2" class="text-center"> Down Payment</td>
                             <td colspan="2">
-                                <?= $form->field($modelTrans, 'trans_pay', ['addClass' => 'form-control trans_pay'])->label(false)->textInput(['class'=>'form-control']) ?>
+                                <?= $form->field($model, 'detcus_pay', ['addClass' => 'form-control detcus_pay'])->label(false)->textInput(['class'=>'form-control']) ?>
                             </td>
                         </tr>
                         <tr>
@@ -204,22 +188,22 @@ use yii\jui\AutoComplete;
                             <th class="text-center">Paket Upgrade</th>
                             <th class="text-center">Qty</th>
                             <th class="text-center">Harga</th>
-                            <th class="text-center" >
+                            <th class="text-center">
                                 <button type="button" class="add-item-upgrade btn btn-success btn-xs"><i class="glyphicon glyphicon-plus"></i></button>
                             </th>
                         </tr>
                     </thead>
                     <tbody class="container-items-upgrade">
-                        <?php foreach ($modelsOrderDetailPaketUpgrade  as $i => $modelOrderDetailPaketUpgrade): ?>
+                        <?php foreach ($modelsOrderDetailPaketUpgrade as $x => $modelOrderDetailPaketUpgrade): ?>
                         <tr class="item-upgrade">
                             <td class="text-center">
                                 <?php
                                     // necessary for update action.
                                     if (! $modelOrderDetailPaketUpgrade->isNewRecord) {
-                                        echo Html::activeHiddenInput($modelOrderDetailPaketUpgrade, "[{$i}]odpu_id");
+                                        echo Html::activeHiddenInput($modelOrderDetailPaketUpgrade, "[{$x}]odpu_id");
                                     }
                                 ?>
-                                <?= $form->field($modelOrderDetailPaketUpgrade, "[{$i}]odpu_upg_id")->label(false)->widget(Select2::classname(), [
+                                <?= $form->field($modelOrderDetailPaketUpgrade, "[{$x}]odpu_upg_id")->label(false)->widget(Select2::classname(), [
                                     'options' => [
                                         'class' => 'odpu_upg_id',
                                         'placeholder' => 'Paket Upgrade'
@@ -243,10 +227,10 @@ use yii\jui\AutoComplete;
                                     ?>
                             </td>
                             <td class="text-center">
-                                <?= $form->field($modelOrderDetailPaketUpgrade, "[{$i}]odpu_qty", ['addClass' => 'form-control odpu_qty'])->label(false)->textInput(['maxlength' => true, 'type' => 'number']) ?>
+                                <?= $form->field($modelOrderDetailPaketUpgrade, "[{$x}]odpu_qty", ['addClass' => 'form-control odpu_qty'])->label(false)->textInput(['maxlength' => true, 'type' => 'number']) ?>
                             </td>
                             <td class="text-center">
-                                <?= $form->field($modelOrderDetailPaketUpgrade, "[{$i}]odpu_harga", ['addClass' => 'form-control odpu_harga'])->label(false)->textInput(['disabled' => true, 'maxlength' => true, 'type' => 'number']) ?>
+                                <?= $form->field($modelOrderDetailPaketUpgrade, "[{$x}]odpu_harga", ['addClass' => 'form-control odpu_harga'])->label(false)->textInput(['disabled' => true, 'maxlength' => true, 'type' => 'number']) ?>
                             </td>
                             <td class="text-center">
                                 <button type="button" class="remove-item-upgrade btn btn-danger btn-xs"><i class="glyphicon glyphicon-minus"></i></button>
@@ -306,47 +290,3 @@ $script = <<<JS
 JS;
 $this->registerJs($script);
 
-
-
-
-// $script = <<<JS
-//  $(function () {
-//     $(document).ready(function() {
-//         $("#status_pembayaran").change(function () {
-//             if ( $(event.target).val() === 'DP')
-//             {
-//                 $("#sisa_pelunasan").show();
-//                 $("#grand_total").hide();
-//             }
-//             else{
-//                 $("#grand_total").show();
-//                 $("#sisa_pelunasan").hide();
-//             }    
-//         });
-//     });
-// }); 
-// JS;
-// $this->registerJs($script);
-
-// $this->registerJs("
-//     var noinvoice = '';
-//     $('#detail-customer').autocomplete({
-//         select: function( event, ui ) {
-//             country = (ui.item.detcus_id);
-//             $('#detail').autocomplete({
-//                 source: '/city/list/'+country
-//             });
-//         }
-//     });
-// $('#partner-bill_zip').autocomplete({
-//     select: function(event, ui) {
-//         $('#partner-bill_city').val(ui.item.citname);
-//     }
-// });
-// ", View::POS_READY, 'partner_script');
-
-// ============ INITIAL ARRAY ===========
-// $city_zip = backend\models\Customer::find()
-//     ->select(['CONCAT(cit_zip, " ", cit_name) as label', 'cit_zip as value', 'cit_id as id', 'cit_name as citname'])
-//     ->asArray()
-//     ->all();
