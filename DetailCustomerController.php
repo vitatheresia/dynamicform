@@ -173,13 +173,47 @@ class DetailCustomerController extends Controller
     public function actionUpdate($detcus_id)
     {
         $model = $this->findModel($detcus_id);
+        $modelsOrderDetailPaketFoto = $model->orderDetailPaketFoto;
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'detcus_id' => $model->detcus_id]);
+        if ($model->load(Yii::$app->request->post())) {
+
+            $oldIDs = ArrayHelper::map($modelsOrderDetailPaketFoto, 'odpf_detcus_id', 'odpf_detcus_id');
+            $modelsOrderDetailPaketFoto = Model::createMultiple(OrderDetailPaketFoto::classname(), $modelsOrderDetailPaketFoto);
+            Model::loadMultiple($modelsOrderDetailPaketFoto, Yii::$app->request->post());
+            $deletedIDs = array_diff($oldIDs, array_filter(ArrayHelper::map($modelsOrderDetailPaketFoto, 'odpf_detcus_id', 'odpf_detcus_id')));
+
+            // validate all models
+            $valid = $model->validate();
+            $valid = Model::validateMultiple($modelsOrderDetailPaketFoto) && $valid;
+
+            if ($valid) {
+                $transaction = \Yii::$app->db->beginTransaction();
+                try {
+                    if ($flag = $model->save(false)) {
+                        if (! empty($deletedIDs)) {
+                            OrderDetailPaketFoto::deleteAll(['odpf_detcus_id' => $deletedIDs]);
+                        }
+                        foreach ($modelsOrderDetailPaketFoto as $modelOrderDetailPaketFoto) {
+                            $modelOrderDetailPaketFoto->odpf_detcus_id = $model->detcus_id;
+                            if (! ($flag = $modelOrderDetailPaketFoto->save(false))) {
+                                $transaction->rollBack();
+                                break;
+                            }
+                        }
+                    }
+                    if ($flag) {
+                        $transaction->commit();
+                        return $this->redirect(['view', 'detcus_id' => $model->detcus_id]);
+                    }
+                } catch (Exception $e) {
+                    $transaction->rollBack();
+                }
+            }
         }
 
         return $this->render('update', [
             'model' => $model,
+            'modelsOrderDetailPaketFoto' => (empty($modelsOrderDetailPaketFoto)) ? [new OrderDetailPaketFoto()] : $modelsOrderDetailPaketFoto
         ]);
     }
 
